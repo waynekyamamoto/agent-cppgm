@@ -34,8 +34,8 @@ test: all
 	scripts/run_all_tests.pl cy86 my tests
 	scripts/compare_results.pl ref my tests
 	@if [ -d ../tests/course/pa9 ]; then \
-		scripts/run_all_tests.pl cy86 my ../tests/course/pa9; \
-		scripts/compare_results.pl ref my ../tests/course/pa9; \
+		scripts/run_all_tests.pl cy86 my course/pa9; \
+		scripts/compare_results.pl ref my course/pa9; \
 	fi
 # regenerate reference test output
 ref-test:

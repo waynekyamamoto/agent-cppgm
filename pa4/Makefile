@@ -34,8 +34,8 @@ test: all
 	scripts/run_all_tests.pl macro my tests
 	scripts/compare_results.pl ref my tests
 	@if [ -d ../tests/course/pa4 ]; then \
-		scripts/run_all_tests.pl macro my ../tests/course/pa4; \
-		scripts/compare_results.pl ref my ../tests/course/pa4; \
+		scripts/run_all_tests.pl macro my course/pa4; \
+		scripts/compare_results.pl ref my course/pa4; \
 	fi
 # regenerate reference test output
 ref-test:

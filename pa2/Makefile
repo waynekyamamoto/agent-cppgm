@@ -34,8 +34,8 @@ test: all
 	scripts/run_all_tests.pl posttoken my tests
 	scripts/compare_results.pl ref my tests
 	@if [ -d ../tests/course/pa2 ]; then \
-		scripts/run_all_tests.pl posttoken my ../tests/course/pa2; \
-		scripts/compare_results.pl ref my ../tests/course/pa2; \
+		scripts/run_all_tests.pl posttoken my course/pa2; \
+		scripts/compare_results.pl ref my course/pa2; \
 	fi
 # regenerate reference test output
 ref-test:

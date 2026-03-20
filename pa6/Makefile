@@ -34,8 +34,8 @@ test: all
 	scripts/run_all_tests.pl recog my tests
 	scripts/compare_results.pl ref my tests
 	@if [ -d ../tests/course/pa6 ]; then \
-		scripts/run_all_tests.pl recog my ../tests/course/pa6; \
-		scripts/compare_results.pl ref my ../tests/course/pa6; \
+		scripts/run_all_tests.pl recog my course/pa6; \
+		scripts/compare_results.pl ref my course/pa6; \
 	fi
 # regenerate reference test output
 ref-test:
