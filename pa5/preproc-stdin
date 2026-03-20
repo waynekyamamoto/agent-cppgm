@@ -1,11 +1,12 @@
 #!/bin/sh
 
-in=$(tempfile) || exit
-out=$(tempfile) || exit
+in=$(mktemp) || exit
+out=$(mktemp) || exit
 
-cat > $in
+trap 'rm -f "$in" "$out"' EXIT HUP INT TERM
 
-./preproc -o $out $in
+cat > "$in"
 
-cat $out
+../dev/preproc -o "$out" "$in" || exit
 
+cat "$out"

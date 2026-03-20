@@ -1,6 +1,7 @@
 # Project Layout and Development Workflow
 
-This project is a series of assignments (PA1 to PA9) aimed at building a self-hosting C++11 compiler for Linux x86_64.
+This project is a series of assignments, `PA1` through `PA9`, that build
+toward a self-hosting C++11 compiler for Linux x86_64.
 
 ## Project Structure
 
@@ -21,20 +22,30 @@ Assignments PA6 through PA9 include grammar files (`.gram`) and sometimes additi
 
 ## Development Workflow
 
-To facilitate code reuse and maintain a single source of truth for the compiler's implementation, the `dev/` directory is structured to isolate assignment entry points from shared logic.
+To facilitate code reuse and maintain a single source of truth for the
+compiler's implementation, the project uses a central `dev/` build with
+assignment-local source symlinks.
 
-- `dev/assignments/`: Contains the `main` entry point for each assignment (e.g., `pptoken.cpp`, `posttoken.cpp`).
-- `dev/`: The root of the `dev` directory should contain all **shared** compiler components (e.g., `tokenizer.cpp`, `parser.cpp`).
+- `dev/`: Contains the real assignment entry points, one file per tool
+  (for example `dev/pptoken.cpp` and `dev/posttoken.cpp`).
+- `dev/src/`: Contains all shared compiler components and shared headers.
+- `paN/<tool>.cpp`: Each assignment contains a committed symlink to the real
+  entry point in `../dev/`. This keeps the assignment package shape familiar
+  without duplicating source.
 
 ### Working on an Assignment
 
 1. **Implement Features**: 
-   - Modify the corresponding entry point in `dev/assignments/`.
-   - Add new shared components directly into `dev/`.
-2. **Automatic Shared Code Discovery**:
-   - The Makefiles automatically find **all** `.cpp` files in the root of `dev/` and link them into your executable.
-   - There is no need to update the Makefiles when you add new shared `.cpp` files to `dev/`.
-   - The compiled objects are stored in a shared `obj/` directory for fast builds across assignments.
+   - Modify the corresponding tool entry point in `dev/`.
+   - Add new shared components in `dev/src/`.
+2. **Central Shared Build**:
+   - The canonical executables are built by `dev/Makefile`.
+   - Assignment Makefiles delegate builds to `dev/Makefile` rather than
+     compiling shared sources themselves.
+   - Shared objects are kept in a shared `obj/` cache so later assignments
+     reuse already-built common code.
+   - The assignment Makefiles take a lock before invoking the central build so
+     concurrent assignment builds do not trample each other in `obj/`.
 3. **Automatic Dependency Tracking**: 
    - Header changes (`.h` files) are automatically detected, ensuring that only the necessary source files are recompiled when you modify an interface.
 4. **Build and Verify**:
@@ -52,19 +63,22 @@ To facilitate code reuse and maintain a single source of truth for the compiler'
 As you progress through the assignments, it is crucial to ensure that changes
 made for a new assignment do not break previous ones.
 
+- `make build` from the project root builds the canonical tools once through
+  `dev/Makefile`.
+- `make test` from the project root runs `make build` first, then runs the
+  assignment suites against the already-built tools with rebuilds skipped.
 - After completing `paN`, run `make test-through-paN` from the **project
-  root** to build and test all assignments from `pa1` through `paN`.
+  root** to follow the same build-first path and then test assignments from
+  `pa1` through `paN`.
 - Example: after finishing `pa5`, run `make test-through-pa5`.
-- `make test` from the **project root** still runs the full suite (`pa1`
-  through `pa9`) and is useful for final verification.
 - Treat this regression run as part of finishing the assignment, not as an
   optional cleanup step.
 
 ### Version Control (Git)
 
 It is highly recommended to track your progress using Git. Committing
-frequently lets you refactor shared code in `dev/` with less risk and makes it
-much easier to recover from regressions.
+frequently makes shared-code refactors safer and makes regressions much easier
+to unwind.
 
 **Commit Strategy**: 
 - Commit after successfully implementing a new feature or passing a new test case.
@@ -91,12 +105,12 @@ Each retrospective should cover:
   debugging and regression triage much easier.
 - Periodically simplify, reorganize, and refactor shared code as the project
   grows so the implementation stays manageable across later assignments.
-- Follow the checked-in tests closely. In this project, passing the provided
-  tests is often a better guide than trying to implement a broader or newer
-  interpretation of the language.
+- Follow the checked-in tests closely. Implement behavior to match the current
+  test suite where possible, even if a broader feature set or a newer standard
+  interpretation would behave differently.
 - Do not implement features "ahead" of the assignment if doing so changes
   behavior that the current tests expect.
-- If a conflict between the tests, reference behavior, and the intended design
+- If a conflict between the tests, reference behavior, and intended design
   truly cannot be resolved cleanly, choose the path that keeps the assignment
   moving forward and document the conflict in `RETRO.md`.
 
@@ -117,7 +131,8 @@ Each retrospective should cover:
   `paN/tests/`.
 - **Test Authority**: Prefer the checked-in tests for the current assignment
   over speculative improvements, broader feature support, or newer-standard
-  behavior when those would cause regressions.
+  behavior when those would cause regressions. In practice, implement to the
+  tests where possible.
 - **Authoring Rule for Shared Tests**: Do not bulk-regenerate the checked-in
   `.ref` files under `tests/course/paN/` from the local `*-ref` binaries.
   Those imported fixtures are authoritative and may intentionally cover edge

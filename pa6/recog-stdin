@@ -1,11 +1,12 @@
 #!/bin/sh
 
-in=$(tempfile) || exit
-out=$(tempfile) || exit
+in=$(mktemp) || exit
+out=$(mktemp) || exit
 
-cat > $in
+trap 'rm -f "$in" "$out"' EXIT HUP INT TERM
 
-./recog -o $out $in
+cat > "$in"
 
-cat $out
+../dev/recog -o "$out" "$in" || exit
 
+cat "$out"

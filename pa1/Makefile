@@ -1,42 +1,37 @@
-CXX = g++
-CXXFLAGS = -g -std=gnu++11 -Wall -I../dev -MMD -MP
-OBJDIR = ../obj
-
+CXX ?= g++
 PROG = pptoken
+COURSE_TEST_ROOT = $(wildcard course/pa1)
+DEV_BUILD_LOCK = ../obj/.dev-build.lock
 
-# Entry point for this assignment
-MAIN_CPP = ../dev/assignments/$(PROG).cpp
+.PHONY: all test ref-test dev-shared-target
 
-# Automatically find all shared .cpp files in ../dev (excluding the assignments folder)
-SHARED_CPPS = $(wildcard ../dev/*.cpp)
+all: ../dev/$(PROG)
 
-# The objects to link are the current assignment entry point, plus all discovered shared objects
-OBJS = $(OBJDIR)/assignments/$(PROG).o $(patsubst ../dev/%.cpp,$(OBJDIR)/%.o,$(SHARED_CPPS))
-
-all: $(PROG)
-
-# build $(PROG) application
-$(PROG): $(OBJS)
-	$(CXX) $(CXXFLAGS) -o $@ $(OBJS)
-
-$(OBJDIR)/assignments/%.o: ../dev/assignments/%.cpp
-	@mkdir -p $(OBJDIR)/assignments
-	$(CXX) $(CXXFLAGS) -c $< -o $@
-
-$(OBJDIR)/%.o: ../dev/%.cpp
-	@mkdir -p $(OBJDIR)
-	$(CXX) $(CXXFLAGS) -c $< -o $@
-
--include $(OBJS:.o=.d)
-
-# test pptoken application
-test: all
-	scripts/run_all_tests.pl pptoken my tests
+ifeq ($(COURSE_TEST_ROOT),)
+test: dev-shared-target
+	scripts/run_all_tests.pl ../dev/$(PROG) my tests
 	scripts/compare_results.pl ref my tests
-	@if [ -d ../tests/course/pa1 ]; then \
-		scripts/run_all_tests.pl pptoken my course/pa1; \
-		scripts/compare_results.pl ref my course/pa1; \
+else
+test: dev-shared-target
+	scripts/run_all_tests.pl ../dev/$(PROG) my tests
+	scripts/compare_results.pl ref my tests
+	scripts/run_all_tests.pl ../dev/$(PROG) my $(COURSE_TEST_ROOT)
+	scripts/compare_results.pl ref my $(COURSE_TEST_ROOT)
+endif
+
+../dev/$(PROG):
+	@mkdir -p ../obj
+	@lockdir=$(DEV_BUILD_LOCK); \
+	while ! mkdir $$lockdir 2>/dev/null; do sleep 1; done; \
+	trap 'rmdir "$$lockdir"' EXIT HUP INT TERM; \
+	$(MAKE) -C ../dev $(PROG)
+
+dev-shared-target:
+	@if [ "$(CPGM_SKIP_DEV_REBUILD)" = "1" ]; then \
+		true; \
+	else \
+		$(MAKE) --no-print-directory ../dev/$(PROG); \
 	fi
-# regenerate reference test output
+
 ref-test:
 	scripts/run_all_tests.pl pptoken-ref ref tests
