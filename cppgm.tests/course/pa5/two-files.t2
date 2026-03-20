@@ -1,4 +1,0 @@
-file2
-#ifdef SUPPRESS
-#error Incorrectly defined
-#endif

@@ -61,5 +61,5 @@ It is highly recommended to track your progress using Git. Committing frequently
 
 - **Reference Implementations**: Each `paN` directory contains a compiled reference binary (e.g., `pptoken-ref`). You can use this binary to see the expected correct behavior or to generate the correct `.ref` and `.ref.exit_status` outputs for any newly created test cases.
 - **Test Suites**: The original test suites are located in `paN/tests/`. They include input files (`.t`), reference outputs (`.ref`), and exit statuses.
-- **Extra User-Supplied Tests**: Additional tests are located in `cppgm.tests/course/paN/`. **If you need to add your own new tests, you should add them to the `cppgm.tests/course/paN/` directory** rather than the original `paN/tests/` directory. The `make test` command is configured to automatically run both.
+- **Extra User-Supplied Tests**: Additional tests are located in `tests/course/paN/`. **If you need to add your own new tests, you should add them to the `tests/course/paN/` directory** rather than the original `paN/tests/` directory. The `make test` command is configured to automatically run both.
 - **C++ Standard**: The project targets the C++11 standard (N3485), available in the `doc/` directory.

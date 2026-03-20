@@ -1,3 +1,0 @@
-void a() {
-    new (char*)();
-}

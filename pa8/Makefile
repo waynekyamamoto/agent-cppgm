@@ -33,9 +33,9 @@ $(OBJDIR)/%.o: ../dev/%.cpp
 test: all
 	scripts/run_all_tests.pl nsinit my tests
 	scripts/compare_results.pl ref my tests
-	@if [ -d ../cppgm.tests/course/pa8 ]; then \
-		scripts/run_all_tests.pl nsinit my ../cppgm.tests/course/pa8; \
-		scripts/compare_results.pl ref my ../cppgm.tests/course/pa8; \
+	@if [ -d ../tests/course/pa8 ]; then \
+		scripts/run_all_tests.pl nsinit my ../tests/course/pa8; \
+		scripts/compare_results.pl ref my ../tests/course/pa8; \
 	fi
 
 # regenerate reference test output

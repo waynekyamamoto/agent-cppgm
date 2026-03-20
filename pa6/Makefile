@@ -33,11 +33,10 @@ $(OBJDIR)/%.o: ../dev/%.cpp
 test: all
 	scripts/run_all_tests.pl recog my tests
 	scripts/compare_results.pl ref my tests
-	@if [ -d ../cppgm.tests/course/pa6 ]; then \
-		scripts/run_all_tests.pl recog my ../cppgm.tests/course/pa6; \
-		scripts/compare_results.pl ref my ../cppgm.tests/course/pa6; \
+	@if [ -d ../tests/course/pa6 ]; then \
+		scripts/run_all_tests.pl recog my ../tests/course/pa6; \
+		scripts/compare_results.pl ref my ../tests/course/pa6; \
 	fi
 # regenerate reference test output
 ref-test:
 	scripts/run_all_tests.pl recog-ref ref tests
-

@@ -1,3 +1,0 @@
-class Ca {
-    char b() {};
-};
