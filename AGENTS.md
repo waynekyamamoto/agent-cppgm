@@ -114,6 +114,26 @@ Each retrospective should cover:
   truly cannot be resolved cleanly, choose the path that keeps the assignment
   moving forward and document the conflict in `RETRO.md`.
 
+### Assignment Integrity
+
+- Implement the assignment yourself in `dev/` and `dev/src/`. The goal is to
+  make the student tool behave correctly, not to make the test harness report
+  success by other means.
+- Do not edit checked-in `.ref` outputs, `.ref.*` sidecars, or test inputs in
+  order to match an incomplete implementation.
+- Do not bypass, skip, narrow, or weaken the required tests. Do not modify
+  Makefiles, compare scripts, or test runners just to avoid exercising failing
+  behavior.
+- Do not shell out from the student implementation to reference binaries,
+  production compilers, prior solutions, or other external programs to produce
+  the assignment's required output. The reference tools are for observation and
+  fixture generation only, not for delegation.
+- Do not hardcode expected answers for specific test files or special-case
+  behavior by test name. Implement the underlying language feature or rule.
+- If you discover a genuine bug or conflict in the harness or assignment
+  materials, note it in `RETRO.md` and continue implementing the assignment
+  yourself rather than treating test or harness edits as the solution.
+
 ## Tools and References
 
 - **Reference Implementations**: Each `paN` directory contains a compiled
