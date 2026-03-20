@@ -13,5 +13,13 @@ pa9/cy86
 *.stderr
 *.exit_status
 *.my
+*.my.*
+*.other.*
 *.program
 *.impl.*
+!*.ref.stdout
+!*.ref.stderr
+!*.ref.exit_status
+!*.ref.program
+!*.ref.program.*
+!*.ref.impl.*
