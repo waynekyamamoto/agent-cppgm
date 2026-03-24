@@ -39,6 +39,19 @@ sub rerun_hint
 	return "To rerun this assignment with per-test output from the repo root:\n\n    \$ cd $repo_root && VERBOSE=1 make $assignment\n\n";
 }
 
+sub getdata
+{
+	my ($file) = @_;
+
+	open my $fh, '<', $file or die "Cannot read $file: $!";
+	local $/;
+	my $data = <$fh>;
+	close $fh;
+	$data //= '';
+	chomp($data);
+	return $data;
+}
+
 for my $test (@tests)
 {
 	print "\n$test: " if $verbose;
@@ -51,15 +64,8 @@ for my $test (@tests)
 	my $mytest = "$testbase.$my_suffix";
 	my $mytest_exit_status = "$mytest.exit_status";
 
-	my $reftest_data = `cat $reftest`;
-	my $reftest_exit_status_data = `cat $reftest_exit_status`;
-	my $mytest_data = `cat $mytest`;
-	my $mytest_exit_status_data = `cat $mytest_exit_status`;
-
-	chomp($reftest_data);
-	chomp($reftest_exit_status_data);
-	chomp($mytest_data);
-	chomp($mytest_exit_status_data);
+	my $reftest_exit_status_data = getdata($reftest_exit_status);
+	my $mytest_exit_status_data = getdata($mytest_exit_status);
 
 	if ($reftest_exit_status_data ne $mytest_exit_status_data)
 	{
@@ -69,13 +75,23 @@ for my $test (@tests)
 		print "TEST FAIL\n";
 		exit(1);
 	}
-	elsif ($reftest_exit_status_data =~ /EXIT_FAILURE/ or ($reftest_data eq $mytest_data))
+	elsif ($reftest_exit_status_data =~ /EXIT_FAILURE/)
 	{
 		$npass++;
 		print "PASS\n\n" if $verbose;
 	}
 	else
 	{
+		my $reftest_data = getdata($reftest);
+		my $mytest_data = getdata($mytest);
+
+		if ($reftest_data eq $mytest_data)
+		{
+			$npass++;
+			print "PASS\n\n" if $verbose;
+			next;
+		}
+
 		print fail_prefix();
 		print "$test: ERROR: Output does not match reference implementation\n\n";
 		print "To rerun this assignment with per-test output from the repo root:\n\n    \$ cd $repo_root && VERBOSE=1 make $assignment\n\n";
