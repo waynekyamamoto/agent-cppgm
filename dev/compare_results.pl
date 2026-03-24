@@ -19,7 +19,7 @@ my $cwd = getcwd();
 my $assignment = basename($cwd);
 my $repo_root = dirname($cwd);
 
-my @tests = grep { m/\.t\.1$/ } sort split(/\s+/, `find $tests -type f`);
+my @tests = grep { m/\.t$/ } sort split(/\s+/, `find $tests -type f`);
 my $suite_total = scalar(@tests);
 
 my $npass = 0;
@@ -60,7 +60,7 @@ sub getdata
 	
 		my $display_test = $keep_going ? "$assignment/$test" : $test;
 		my $testbase = $test;
-		$testbase =~ s/\.t\.1$//;
+		$testbase =~ s/\.t$//;
 	
 		my $reftest = "$testbase.$ref_suffix";
 		my $reftest_exit_status = "$reftest.exit_status";
@@ -110,7 +110,7 @@ sub getdata
 			print "$display_test: ERROR: Output does not match reference implementation\n";
 			if (!$keep_going) {
 				print "\n";
-				print rerun_hint();
+				print "To rerun this assignment with per-test output from the repo root:\n\n    \$ cd $repo_root && VERBOSE=1 make $assignment\n\n";
 				print "To see input file:\n\n    \$ cat " . rooted_path($test) . "\n\n";
 				print "To see hex dump of input:\n\n    \$ xxd " . rooted_path($test) . "\n\n";
 				print "To see the differences of output:\n\n    \$ diff " . rooted_path($reftest) . " " . rooted_path($mytest) . "\n\n";
@@ -132,10 +132,10 @@ sub getdata
 	}
 	
 	if ($failed) {
-		if ($keep_going) {
-			system("touch .test_failed");
-			exit(0);
-		}
-		exit(1);
+	    if ($keep_going) {
+	        system("touch .test_failed");
+	        exit(0);
+	    }
+	    exit(1);
 	}
 	exit(0);

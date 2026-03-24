@@ -6,6 +6,8 @@
 #include <fstream>
 #include <iostream>
 
+#include "exceptions.h"
+
 using namespace std;
 
 bool PA6_IsClassName(const string& identifier)
@@ -38,7 +40,7 @@ void DoRecog(istream& in)
 	if (/* TODO: implement PA6 */ false)
 		return;
 	else
-		throw logic_error("not yet implemented");
+		throw NotImplementedException();
 };
 
 int main(int argc, char** argv)
@@ -70,7 +72,11 @@ int main(int argc, char** argv)
 				DoRecog(in);
 				out << srcfile << " OK" << endl;
 			}
-			catch (exception& e)
+			catch (const NotImplementedException& e)
+			{
+				throw;
+			}
+			catch (const exception& e)
 			{
 				cerr << e.what() << endl;
 				out << srcfile << " BAD" << endl;

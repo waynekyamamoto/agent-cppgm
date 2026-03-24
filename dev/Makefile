@@ -11,6 +11,7 @@ TARGETS = \
 
 CXX ?= g++
 CXXFLAGS ?= -g -std=gnu++11 -Wall
+CXXFLAGS += -Wl,--wrap=main
 CPPFLAGS += -Isrc
 DEPFLAGS = -MMD -MP
 OBJ = ../obj/release

@@ -55,6 +55,12 @@ make test
 VERBOSE=1 make test
 ```
 
+For a summarized progress report across all assignments without stopping at the first failure:
+
+```bash
+make test-report
+```
+
 For focused experiments inside an assignment, use `make run INPUT=...`
 instead of invoking `../dev/<tool>` directly. For a single checked-in case,
 use `make check TEST=...`. Both paths keep dependency checks and rebuilds in
@@ -98,6 +104,15 @@ work or immediately after. Each retrospective should cover:
   over.
 - Include extra context in error cases when practical, especially filenames,
   line numbers, and the specific failing condition.
+- You can use `throw std::logic_error(msg)` (or other exceptions) to report
+  errors. The starter code includes a global `try/catch` in `main` that catches
+  these and returns `EXIT_FAILURE` (1), which the test harness recognizes as a
+  legitimate diagnostic.
+- For internal compiler errors (bugs in your own code), you should cause a
+  crash (e.g. `assert(false)` or `std::abort()`). This results in an exit code
+  > 128, which the harness detects as an `Internal Compiler Error (Crash)`
+  rather than a matching diagnostic. This prevents bugs from being misreported
+  as passing negative tests.
 - Periodically simplify, reorganize, and refactor shared code so later
   assignments stay manageable.
 - Follow the checked-in tests closely. Implement to the current assignment's
@@ -124,7 +139,7 @@ work or immediately after. Each retrospective should cover:
   behavior by test name. Implement the underlying rule or feature.
 - If you discover a genuine harness or materials conflict, note it in
   `RETRO.md` and continue implementing the assignment yourself rather than
-  treating test or harness edits as the solution.
+  changing the tests.
 
 ## Tests and References
 

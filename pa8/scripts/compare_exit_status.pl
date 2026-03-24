@@ -12,7 +12,7 @@ if (scalar(@ARGV) != 2)
 
 my $ref_suffix = $ARGV[0];
 my $my_suffix = $ARGV[1];
-my $verbose = $ENV{VERBOSE} || $ENV{CPGM_TEST_VERBOSE};
+my $verbose = $ENV{VERBOSE} || $ENV{CPPGM_TEST_VERBOSE};
 my $cwd = getcwd();
 my $assignment = basename($cwd);
 my $repo_root = dirname($cwd);
