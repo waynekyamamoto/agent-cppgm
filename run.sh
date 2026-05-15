@@ -43,19 +43,46 @@ ensure_container_running() {
         docker start "$CONTAINER" >/dev/null
         return
     fi
-    # First run: assemble mounts and create the container detached.
+    # Pull host auth state at runtime: gh token from keychain (on macOS) and
+    # git identity from host git config. These flow in as env vars and are
+    # never baked into the image.
+    local gh_token=""
+    if command -v gh >/dev/null 2>&1; then
+        gh_token="$(gh auth token 2>/dev/null || true)"
+    fi
+    local git_name="$(git config --global user.name 2>/dev/null || true)"
+    local git_email="$(git config --global user.email 2>/dev/null || true)"
+
     local mounts=( -v "$REPO_ROOT:/work/agent-cppgm" )
     [ -d "$HOME/.aws" ]        && mounts+=( -v "$HOME/.aws:/home/agent/.aws:ro" )
     [ -d "$HOME/.claude" ]     && mounts+=( -v "$HOME/.claude:/home/agent/.claude" )
     [ -d "$HOME/.config/gh" ]  && mounts+=( -v "$HOME/.config/gh:/home/agent/.config/gh" )
+
+    local envs=()
+    [ -n "$gh_token" ]  && envs+=( -e "GH_TOKEN=$gh_token" -e "GITHUB_TOKEN=$gh_token" )
+    [ -n "$git_name" ]  && envs+=( -e "GIT_AUTHOR_NAME=$git_name"  -e "GIT_COMMITTER_NAME=$git_name" )
+    [ -n "$git_email" ] && envs+=( -e "GIT_AUTHOR_EMAIL=$git_email" -e "GIT_COMMITTER_EMAIL=$git_email" )
+
     docker run -d \
         --name "$CONTAINER" \
         --platform=linux/amd64 \
         --hostname agent-cppgm \
         "${mounts[@]}" \
+        "${envs[@]}" \
         -w /work/agent-cppgm \
         "$IMAGE" \
         sleep infinity >/dev/null
+
+    # One-time setup inside the container: git identity + gh credential helper.
+    docker exec -u agent "$CONTAINER" bash -c "
+        set -e
+        [ -n \"${git_name}\" ]  && git config --global user.name  \"${git_name}\"
+        [ -n \"${git_email}\" ] && git config --global user.email \"${git_email}\"
+        if [ -n \"\$GH_TOKEN\" ]; then
+            gh auth setup-git 2>/dev/null || true
+        fi
+        true
+    " >/dev/null 2>&1 || true
 }
 
 case "${1:-shell}" in
