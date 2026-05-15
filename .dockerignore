@@ -1,0 +1,4 @@
+# Keep the build context small. The repo is mounted at runtime, so the
+# image itself doesn't need any of the source/build artifacts baked in.
+**
+!Dockerfile
