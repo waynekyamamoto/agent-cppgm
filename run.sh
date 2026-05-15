@@ -54,7 +54,6 @@ ensure_container_running() {
     local git_email="$(git config --global user.email 2>/dev/null || true)"
 
     local mounts=( -v "$REPO_ROOT:/work/agent-cppgm" )
-    [ -d "$HOME/.aws" ]        && mounts+=( -v "$HOME/.aws:/home/agent/.aws:ro" )
     [ -d "$HOME/.claude" ]     && mounts+=( -v "$HOME/.claude:/home/agent/.claude" )
     [ -d "$HOME/.config/gh" ]  && mounts+=( -v "$HOME/.config/gh:/home/agent/.config/gh" )
 
