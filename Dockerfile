@@ -1,17 +1,13 @@
 # syntax=docker/dockerfile:1.6
 #
-# Build sandbox for the agent-cppgm course.
-# Pinned to linux/amd64 because:
-#   - PA9 codegen targets x86-64
-#   - the committed *-ref reference binaries are x86-64 ELF
-#   - the course assumes the System V x86-64 ABI throughout
-# Native on EC2 x86-64; runs under emulation on Apple Silicon.
+# Unified linux/amd64 environment for the agent-cppgm course.
+# Pinned to linux/amd64 because PA9 codegen, the *-ref reference binaries,
+# and the course ABI all target x86-64. Runs natively on EC2 x86-64;
+# runs under Rosetta on Apple Silicon (requires Docker Desktop 4.25+).
 #
-# This image is intentionally a *build sandbox*, not an agent host.
-# Claude / the agent runs on the host machine and uses `./run.sh` to
-# execute builds and tests inside this container. Keeping Node/V8 out
-# of the image avoids the QEMU-amd64 + V8 CodeRange OOM that breaks
-# `npm install` under older Docker Desktop on Apple Silicon.
+# Contains both the build toolchain and the agent (Claude Code), so the
+# entire workflow lives inside the container: ./run.sh drops you into a
+# shell where `make`, `claude`, `gh`, and `aws` are all available.
 
 FROM --platform=linux/amd64 ubuntu:22.04
 
@@ -28,6 +24,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
       make \
       perl \
       python3 \
+      python3-pip \
       diffutils \
       grep \
       sed \
@@ -44,12 +41,36 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
       tmux \
       curl \
       ca-certificates \
+      unzip \
       sudo \
+      gnupg \
+      lsb-release \
+    && rm -rf /var/lib/apt/lists/*
+
+# Node.js 20 + Claude Code CLI.
+RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
+    && apt-get install -y --no-install-recommends nodejs \
+    && npm install -g @anthropic-ai/claude-code \
+    && rm -rf /var/lib/apt/lists/*
+
+# AWS CLI v2 (x86_64 binary; matches the image platform).
+RUN curl -fsSL "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o /tmp/awscliv2.zip \
+    && unzip -q /tmp/awscliv2.zip -d /tmp \
+    && /tmp/aws/install \
+    && rm -rf /tmp/awscliv2.zip /tmp/aws
+
+# GitHub CLI.
+RUN curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg \
+      | dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg \
+    && chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg \
+    && echo "deb [arch=amd64 signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" \
+      > /etc/apt/sources.list.d/github-cli.list \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends gh \
     && rm -rf /var/lib/apt/lists/*
 
 # Non-root user whose UID/GID match the host so files on the mounted
-# volume show up with the host user's ownership. Drop any pre-baked
-# user that collides with the requested UID before creating ours.
+# volume show up with the host user's ownership.
 ARG HOST_UID=1000
 ARG HOST_GID=1000
 RUN if id ubuntu >/dev/null 2>&1; then userdel -r ubuntu 2>/dev/null || true; fi \
